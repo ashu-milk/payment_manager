@@ -2,7 +2,7 @@
   "name": "Bill Management",
   "short_name": "Bills",
   "description": "月次支払い管理帳",
-  "start_url": "./payment_manager.html",
+  "start_url": "./payment_manager.html?pwa=1",
   "display": "standalone",
   "background_color": "#2d5a1b",
   "theme_color": "#2d5a1b",
@@ -25,5 +25,7 @@
   "categories": [
     "finance",
     "productivity"
-  ]
+  ],
+  "scope": "./",
+  "id": "./payment_manager.html"
 }
