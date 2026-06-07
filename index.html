@@ -1529,19 +1529,19 @@ function exportData(){
   if(count === 0){ alert('\u4FDD\u5B58\u3059\u308B\u30C7\u30FC\u30BF\u304C\u3042\u308A\u307E\u305B\u3093'); return; }
 
   var json = JSON.stringify(data, null, 2);
-  var blob = new Blob([json], {type:'application/json'});
-  var url  = URL.createObjectURL(blob);
-  var a    = document.createElement('a');
   var now  = new Date();
   var ymd  = now.getFullYear()
              + String(now.getMonth()+1).padStart(2,'0')
              + String(now.getDate()).padStart(2,'0');
-  a.href     = url;
+
+  /* Use data URI — works offline and without SW interference */
+  var uri = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
+  var a   = document.createElement('a');
+  a.href     = uri;
   a.download = 'bill_management_' + ymd + '.json';
   document.body.appendChild(a);
   a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  setTimeout(function(){ document.body.removeChild(a); }, 100);
 }
 
 function importData(file){

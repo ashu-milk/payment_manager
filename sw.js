@@ -38,6 +38,9 @@ self.addEventListener('fetch', function(e) {
   /* POSTなどのナビゲーション以外はスルー */
   if (e.request.method !== 'GET') return;
 
+  /* data:, blob:, chrome-extension: などのスキームはスルー */
+  if (!e.request.url.startsWith('http')) return;
+
   var url = new URL(e.request.url);
 
   /* Google Fonts: ネットワーク優先 → キャッシュ → 無視 */
