@@ -8,8 +8,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Bills">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
 <title>Bill Management</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -1665,42 +1663,6 @@ render();
 
 </script>
 
-<!-- PWA Install Banner -->
-<div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;
-  background:var(--hdr-bg);color:var(--hdr-text);padding:12px 16px;
-  align-items:center;gap:12px;z-index:999;
-  padding-bottom:calc(12px + env(safe-area-inset-bottom,0));
-  box-shadow:0 -2px 12px rgba(0,0,0,.25);">
-  <span style="font-size:13px;flex:1;letter-spacing:.03em;">📲 ホーム画面に追加してオフラインで使えます</span>
-  <button onclick="(function(){if(deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.then(function(){deferredPrompt=null;document.getElementById('installBanner').style.display='none';});}})()"
-    style="background:var(--hdr-border);color:var(--hdr-bg);border:none;padding:7px 14px;
-    border-radius:20px;font-family:'Noto Serif JP',serif;font-size:12px;cursor:pointer;white-space:nowrap;">
-    追加する
-  </button>
-  <button onclick="document.getElementById('installBanner').style.display='none'"
-    style="background:none;border:1px solid var(--sepia-lt);color:var(--sepia-lt);
-    padding:6px 10px;border-radius:20px;font-size:11px;cursor:pointer;">✕</button>
-</div>
 
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load',function(){
-    navigator.serviceWorker.register('./sw.js')
-      .then(function(r){ console.log('SW:',r.scope); })
-      .catch(function(e){ console.log('SW failed:',e); });
-  });
-}
-var deferredPrompt=null;
-window.addEventListener('beforeinstallprompt',function(e){
-  e.preventDefault(); deferredPrompt=e;
-  var b=document.getElementById('installBanner');
-  if(b) b.style.display='flex';
-});
-window.addEventListener('appinstalled',function(){
-  var b=document.getElementById('installBanner');
-  if(b) b.style.display='none';
-  deferredPrompt=null;
-});
-</script>
 </body>
 </html>
