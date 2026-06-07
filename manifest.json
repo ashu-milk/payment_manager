@@ -4,7 +4,7 @@
   "description": "月次支払い管理帳",
   "start_url": "./payment_manager.html",
   "display": "standalone",
-  "background_color": "#f7faf0",
+  "background_color": "#f5f0e8",
   "theme_color": "#2d5a1b",
   "orientation": "portrait-primary",
   "lang": "ja",
@@ -22,8 +22,5 @@
       "purpose": "any maskable"
     }
   ],
-  "categories": [
-    "finance",
-    "productivity"
-  ]
+  "categories": ["finance", "productivity"]
 }

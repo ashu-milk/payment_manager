@@ -8,6 +8,8 @@ self.addEventListener('install', function(e) {
       /* キャッシュ失敗してもインストールは続行する */
       return cache.addAll([
         './payment_manager.html',
+  './icon-192.png',
+  './icon-512.png',
         './'
       ]).catch(function() {});
     })
