@@ -223,8 +223,6 @@ tbody td.num{text-align:right;font-size:12px;}
 .btn-cok:hover{background:#8a3000;}
 
 /* Settings */
-.spage{display:none;padding:22px 22px 22px 68px;}
-.spage.on{display:block;}
 .sec{margin-bottom:24px;}
 .sec-hd{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--sepia);
   padding-bottom:7px;margin-bottom:10px;border-bottom:1px solid var(--rule);
@@ -264,7 +262,7 @@ tbody td.num{text-align:right;font-size:12px;}
 @media(max-width:800px){.cat-wrap{max-width:64px;}}
 @media(max-width:560px){.cat-wrap{max-width:38px;}}
 
-  .hdr,.sum,.cat-sum,.ctrl,.sort-bar,.tbl-wrap,.spage,.ftr{padding-left:12px;}
+  .hdr,.sum,.cat-sum,.ctrl,.sort-bar,.tbl-wrap,.ftr{padding-left:12px;}
   .fgrid{grid-template-columns:1fr;}
   .abar-hint{display:none;}
 }
@@ -372,7 +370,7 @@ tbody td.num{text-align:right;font-size:12px;}
 .rec-stat.pending{background:var(--pend-bg);color:var(--pend);}
 
   .book::before{left:0;}
-  .hdr,.sum,.cat-sum,.ctrl,.sort-bar,.tbl-wrap,.spage,.ftr{padding-left:12px;}
+  .hdr,.sum,.cat-sum,.ctrl,.sort-bar,.tbl-wrap,.ftr{padding-left:12px;}
   .fgrid{grid-template-columns:1fr;}
   .abar-hint{display:none;}
 }
@@ -430,7 +428,7 @@ tbody td.num{text-align:right;font-size:12px;}
   .nc{max-width:70px;}
 
   /* Settings */
-  .spage{padding:16px 12px;}
+  {padding:16px 12px;}
   .srow{flex-wrap:wrap;}
   .srow-name{min-width:90px;}
   .ym-wrap{flex-wrap:wrap;gap:3px;}
@@ -534,7 +532,7 @@ tbody td.num{text-align:right;font-size:12px;}
   </div>
 
   <!-- SETTINGS -->
-  <div class="spage" id="settingsView">
+  <div id="settingsView" style="display:none;padding:22px 22px 22px 68px;">
     <div class="sec">
       <div class="sec-hd">カテゴリ管理 <span class="sec-cnt" id="catCnt">0</span></div>
       <div id="catList"></div>
@@ -1020,7 +1018,12 @@ function toggleSettings(){
   el('sumBar').style.display    =showSett?'none':'flex';
   el('catSumBar').style.display =showSett?'none':'flex';
   el('mnNav').style.display     =showSett?'none':'flex';
-  el('settingsView').style.display = showSett ? 'block' : 'none';
+  var sv = el('settingsView');
+  sv.style.display = showSett ? 'block' : 'none';
+  if(showSett){
+    var pad = window.innerWidth <= 680 ? '16px 12px' : '22px 22px 22px 68px';
+    sv.style.padding = pad;
+  }
   el('btnSettings').textContent =showSett?'\u2715 \u9589\u3058\u308B':'\u2699 \u8A2D\u5B9A';
   el('btnSettings').classList.toggle('on',showSett);
   if(showSett) renderSettings();
