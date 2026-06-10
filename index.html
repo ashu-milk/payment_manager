@@ -645,7 +645,7 @@ tbody td.num{text-align:right;font-size:12px;}
       <div id="importStatus" style="margin-top:8px;font-size:11px;display:none;padding:6px 10px;border-radius:4px;"></div>
     </div>
 
-  <!-- FOOTER  <!-- FOOTER -->
+  <!-- FOOTER -->
   <div class="ftr">
     <span id="ftrM"></span>
     <span>BILL MANAGEMENT · <span id="ftrY"></span></span>
@@ -1080,7 +1080,11 @@ function toggleSettings(){
   }
   el('btnSettings').textContent =showSett?'\u2715 \u9589\u3058\u308B':'\u2699 \u8A2D\u5B9A';
   el('btnSettings').classList.toggle('on',showSett);
-  if(showSett) renderSettings();
+  if(showSett){
+    renderSettings();
+    var dm = el('secDataMgmt');
+    if(dm) dm.style.display = 'block';
+  }
 }
 
 /* == MAIN RENDER == */
