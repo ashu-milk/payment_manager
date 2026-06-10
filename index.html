@@ -453,6 +453,37 @@ tbody td.num{text-align:right;font-size:12px;}
   thead th{font-size:7px;padding:7px 4px;}
   tbody td{font-size:11px;padding:7px 4px;}
 }
+
+/* ── Toast notification (replaces alert()) ── */
+#toast{
+  position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0));
+  left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:var(--paper);
+  padding:10px 20px;border-radius:20px;
+  font-size:13px;letter-spacing:.03em;
+  white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis;
+  opacity:0;pointer-events:none;
+  transition:opacity .22s,transform .22s;
+  z-index:2000;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── Data management section ── */
+.data-btns{display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;}
+.data-btn-wrap{display:flex;flex-direction:column;gap:8px;min-width:140px;flex:1;max-width:240px;}
+.data-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 20px;border-radius:4px;cursor:pointer;
+  font-family:'游明朝','YuMincho','Hiragino Mincho ProN','Hiragino Mincho Pro','HGS明朝E','MS 明朝',serif;
+  font-size:13px;border:none;letter-spacing:.04em;
+  transition:opacity .15s;position:relative;width:100%;justify-content:center;
+}
+.data-btn:hover{opacity:.85;}
+.export-btn{background:var(--accent);color:#fff;}
+.import-btn{background:var(--sepia);color:#fff;}
+.data-btn-icon{font-size:16px;font-weight:700;}
+.data-btn-label{font-size:13px;}
+.data-btn-desc{font-size:10px;color:var(--sepia);line-height:1.7;margin:0;}
 </style>
 </head>
 <body>
@@ -587,23 +618,34 @@ tbody td.num{text-align:right;font-size:12px;}
     </div>
 
     <!-- DATA EXPORT / IMPORT -->
-    <div class="sec">
-      <div class="sec-hd">データ管理（JSON）</div>
-      <p style="font-size:11px;color:var(--sepia);margin-bottom:12px;line-height:1.8;">
-        すべての支払いデータをJSONファイルで保存・復元できます。<br>
-        機種変更・バックアップにご利用ください。
-      </p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-        <button class="btn-add-sm" id="btnExport">↓ JSONで保存</button>
-        <label style="cursor:pointer;position:relative;display:inline-block;">
-          <span class="btn-add-sm" style="background:var(--sepia);display:inline-block;cursor:pointer;">↑ JSONを読込</span>
-          <input type="file" id="importFile" accept=".json" style="display:block;width:100%;height:100%;position:absolute;top:0;left:0;opacity:0;cursor:pointer;">
-        </label>
+    <div class="sec" id="secDataMgmt">
+      <div class="sec-hd">データ管理</div>
+
+      <!-- ボタン＋説明 -->
+      <div class="data-btns">
+        <!-- エクスポート -->
+        <div class="data-btn-wrap">
+          <button class="data-btn export-btn" id="btnExport">
+            <span class="data-btn-icon">↓</span>
+            <span class="data-btn-label">JSONで保存</span>
+          </button>
+          <p class="data-btn-desc">すべての支払いデータをJSONファイルとして端末に保存します。機種変更前や定期バックアップにご利用ください。</p>
+        </div>
+        <!-- インポート -->
+        <div class="data-btn-wrap">
+          <label class="data-btn import-btn">
+            <span class="data-btn-icon">↑</span>
+            <span class="data-btn-label">JSONを読込</span>
+            <input type="file" id="importFile" accept=".json"
+              style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
+          </label>
+          <p class="data-btn-desc">保存済みのJSONファイルを選択してデータを復元します。現在のデータは上書きされますのでご注意ください。</p>
+        </div>
       </div>
-      <div id="importStatus" style="margin-top:10px;font-size:11px;color:var(--paid);display:none;"></div>
+      <div id="importStatus" style="margin-top:8px;font-size:11px;display:none;padding:6px 10px;border-radius:4px;"></div>
     </div>
-  </div>
-  <!-- FOOTER -->
+
+  <!-- FOOTER  <!-- FOOTER -->
   <div class="ftr">
     <span id="ftrM"></span>
     <span>BILL MANAGEMENT · <span id="ftrY"></span></span>
@@ -726,6 +768,18 @@ tbody td.num{text-align:right;font-size:12px;}
 <script>
 (function(){
 'use strict';
+
+/* ── Toast (alert replacement) ── */
+var _toastTimer = null;
+function toast(msg, dur){
+  var el2 = document.getElementById('toast');
+  if(!el2) return;
+  el2.textContent = msg;
+  el2.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function(){ el2.classList.remove('show'); }, dur||2800);
+}
+
 
 /* == CONSTANTS & MASTER DATA == */
 var SK_CATS  = 'pl3_cats';
@@ -1101,11 +1155,11 @@ function cycleStatus(id){
 
 /* == EDIT / DELETE SELECTED ENTRY == */
 function editSelected(){
-  if(!selId){ alert('\u7DE8\u96C6\u3059\u308B\u9805\u76EE\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
+  if(!selId){ toast('\u7DE8\u96C6\u3059\u308B\u9805\u76EE\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
   openModal(selId);
 }
 function deleteSelected(){
-  if(!selId){ alert('\u524A\u9664\u3059\u308B\u9805\u76EE\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
+  if(!selId){ toast('\u524A\u9664\u3059\u308B\u9805\u76EE\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
   var entries=loadEntries(), entry=null;
   for(var i=0;i<entries.length;i++){ if(entries[i].id===selId){ entry=entries[i]; break; } }
   if(!entry) return;
@@ -1166,8 +1220,8 @@ function saveEntry(){
   var name=isOther?el('fNameTxt').value.trim():nameVal;
   var amount=parseInt(el('fAmount').value,10)||0;
   var cat=el('fCat').value;
-  if(!name){ alert('\u652F\u6255\u3044\u540D\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
-  if(amount<=0){ alert('\u91D1\u984D\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
+  if(!name){ toast('\u652F\u6255\u3044\u540D\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
+  if(amount<=0){ toast('\u91D1\u984D\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
   var entry={id:editId||uid(),category:cat,name:name,amount:amount,
     date:el('fDate').value, status:el('fStatus').value, note:el('fNote').value.trim()};
   var entries=loadEntries();
@@ -1230,14 +1284,14 @@ function onSettingsClick(e){
 function addCategory(){
   var inp=el('newCatInp'), val=inp.value.trim(); if(!val) return;
   var cats=getCats();
-  for(var i=0;i<cats.length;i++){ if(cats[i]===val){ alert('\u540C\u3058\u30AB\u30C6\u30B4\u30EA\u304C\u65E2\u306B\u3042\u308A\u307E\u3059'); return; } }
+  for(var i=0;i<cats.length;i++){ if(cats[i]===val){ toast('\u540C\u3058\u30AB\u30C6\u30B4\u30EA\u304C\u65E2\u306B\u3042\u308A\u307E\u3059'); return; } }
   cats.push(val); saveCats(cats); inp.value=''; renderSettings();
 }
 
 function addPaymentName(){
   var inp=el('newNameInp'), val=inp.value.trim(); if(!val) return;
   var cat=el('newNameCat').value, names=getNames();
-  for(var i=0;i<names.length;i++){ if(names[i].name===val){ alert('\u540C\u3058\u652F\u6255\u3044\u540D\u304C\u65E2\u306B\u3042\u308A\u307E\u3059'); return; } }
+  for(var i=0;i<names.length;i++){ if(names[i].name===val){ toast('\u540C\u3058\u652F\u6255\u3044\u540D\u304C\u65E2\u306B\u3042\u308A\u307E\u3059'); return; } }
   var entry={name:val,cat:cat};
   var oi=-1;
   for(var j=0;j<names.length;j++){ if(names[j].name===OTHER){ oi=j; break; } }
@@ -1266,14 +1320,14 @@ function openSetEdit(action,idx){
 function closeSetEdit(){ el('setEditOverlay').classList.remove('on'); setEditAction=''; setEditIdx=-1; }
 function saveSetEdit(){
   var val=el('setEditName').value.trim();
-  if(!val){ alert('\u540D\u524D\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
+  if(!val){ toast('\u540D\u524D\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
   if(setEditAction==='edit-cat'){
     var cats=getCats();
-    for(var j=0;j<cats.length;j++){ if(j!==setEditIdx&&cats[j]===val){ alert('\u540C\u3058\u30AB\u30C6\u30B4\u30EA\u304C\u65E2\u306B\u3042\u308A\u307E\u3059'); return; } }
+    for(var j=0;j<cats.length;j++){ if(j!==setEditIdx&&cats[j]===val){ toast('\u540C\u3058\u30AB\u30C6\u30B4\u30EA\u304C\u65E2\u306B\u3042\u308A\u307E\u3059'); return; } }
     cats[setEditIdx]=val; saveCats(cats); closeSetEdit(); renderCatList(); populateNewNameCat();
   } else {
     var names=getNames();
-    for(var k=0;k<names.length;k++){ if(k!==setEditIdx&&names[k].name===val){ alert('\u540C\u3058\u652F\u6255\u3044\u540D\u304C\u65E2\u306B\u3042\u308A\u307E\u3059'); return; } }
+    for(var k=0;k<names.length;k++){ if(k!==setEditIdx&&names[k].name===val){ toast('\u540C\u3058\u652F\u6255\u3044\u540D\u304C\u65E2\u306B\u3042\u308A\u307E\u3059'); return; } }
     names[setEditIdx].name=val; names[setEditIdx].cat=el('setEditCat').value;
     saveNames(names); closeSetEdit(); renderNameList();
   }
@@ -1469,8 +1523,8 @@ function closeRecEdit(){
 function saveRecEdit(){
   var startV = readYMPicker('reStartEra','reStartY','reStartM');
   var endV   = readYMPicker('reEndEra',  'reEndY',  'reEndM');
-  if(!startV){ alert('\u958B\u59CB\u5E74\u6708\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\uFF08\u5143\u53F7\u30FB\u5E74\u30FB\u6708\u3092\u3059\u3079\u3066\u9078\u629E\uFF09'); return; }
-  if(endV && endV < startV){ alert('\u7D42\u4E86\u5E74\u6708\u306F\u958B\u59CB\u5E74\u6708\u4EE5\u964D\u306B\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
+  if(!startV){ toast('\u958B\u59CB\u5E74\u6708\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\uFF08\u5143\u53F7\u30FB\u5E74\u30FB\u6708\u3092\u3059\u3079\u3066\u9078\u629E\uFF09'); return; }
+  if(endV && endV < startV){ toast('\u7D42\u4E86\u5E74\u6708\u306F\u958B\u59CB\u5E74\u6708\u4EE5\u964D\u306B\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
   var recs = getRecs();
   if(recEditIdx < 0 || recEditIdx >= recs.length) return;
   recs[recEditIdx].startYM = startV;
@@ -1490,11 +1544,11 @@ function addRecurring(){
   var startV = readYMPicker('recStartEra','recStartY','recStartM');
   var endV   = readYMPicker('recEndEra',  'recEndY',  'recEndM');
 
-  if(!name)       { alert('\u652F\u6255\u3044\u540D\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
-  if(!amt||amt<=0){ alert('\u91D1\u984D\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
-  if(!day||day<1||day>31){ alert('\u5F15\u843D\u65E5\u3092 1\u301C31 \u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
-  if(!startV){ alert('\u958B\u59CB\u5E74\u6708\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\uFF08\u5143\u53F7\u30FB\u5E74\u30FB\u6708\u3092\u3059\u3079\u3066\u9078\u629E\uFF09'); return; }
-  if(endV && endV < startV){ alert('\u7D42\u4E86\u5E74\u6708\u306F\u958B\u59CB\u5E74\u6708\u4EE5\u964D\u306B\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
+  if(!name)       { toast('\u652F\u6255\u3044\u540D\u3092\u9078\u629E\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
+  if(!amt||amt<=0){ toast('\u91D1\u984D\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
+  if(!day||day<1||day>31){ toast('\u5F15\u843D\u65E5\u3092 1\u301C31 \u3067\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
+  if(!startV){ toast('\u958B\u59CB\u5E74\u6708\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\uFF08\u5143\u53F7\u30FB\u5E74\u30FB\u6708\u3092\u3059\u3079\u3066\u9078\u629E\uFF09'); return; }
+  if(endV && endV < startV){ toast('\u7D42\u4E86\u5E74\u6708\u306F\u958B\u59CB\u5E74\u6708\u4EE5\u964D\u306B\u3057\u3066\u304F\u3060\u3055\u3044'); return; }
 
   var recs = getRecs();
   recs.push({ id:uid(), cat:cat, name:name, amount:amt, day:day, status:status,
@@ -1539,94 +1593,13 @@ function populateRecSelects(){
 
 
 /* == DATA EXPORT / IMPORT == */
-function exportData(){
-  var data = { version:1, exported: new Date().toISOString(), store:{} };
-  Object.keys(localStorage).forEach(function(k){
-    if(k.indexOf('pl3_') === 0) data.store[k] = localStorage.getItem(k);
-  });
-  var count = Object.keys(data.store).length;
-  if(count === 0){ alert('\u4FDD\u5B58\u3059\u308B\u30C7\u30FC\u30BF\u304C\u3042\u308A\u307E\u305B\u3093'); return; }
-
-  var json = JSON.stringify(data, null, 2);
-  var now  = new Date();
-  var ymd  = now.getFullYear()
-             + String(now.getMonth()+1).padStart(2,'0')
-             + String(now.getDate()).padStart(2,'0');
-  var filename = 'bill_management_' + ymd + '.json';
-
-  /* Try Blob download (Android Chrome, desktop) */
-  var saved = false;
-  try {
-    var blob = new Blob([json], {type:'application/json'});
-    var url  = URL.createObjectURL(blob);
-    var a    = document.createElement('a');
-    a.href = url; a.download = filename; a.style.display = 'none';
-    document.body.appendChild(a); a.click();
-    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 300);
-    saved = true;
-  } catch(e){}
-
-  if(!saved){
-    /* Fallback: data URI */
-    try {
-      var uri = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
-      var a2  = document.createElement('a');
-      a2.href = uri; a2.download = filename; a2.style.display = 'none';
-      document.body.appendChild(a2); a2.click();
-      setTimeout(function(){ document.body.removeChild(a2); }, 300);
-      saved = true;
-    } catch(e2){}
-  }
-
-  var st = el('importStatus');
-  if(st){
-    st.style.display = 'block';
-    st.style.color = saved ? 'var(--paid)' : 'var(--unpaid)';
-    st.textContent = saved
-      ? '✔ ダウンロードしました：' + filename
-      : '⚠ ダウンロードできませんでした';
-  }
-}
-
-function importFileSelected(file){
-  if(!file) return;
-  var status = el('importStatus');
-  var reader = new FileReader();
-  reader.onload = function(e){
-    try {
-      var data = JSON.parse(e.target.result);
-      if(!data || !data.store) throw new Error('\u5F62\u5F0F\u304C\u6B63\u3057\u304F\u3042\u308A\u307E\u305B\u3093');
-      var keys = Object.keys(data.store).filter(function(k){ return k.indexOf('pl3_') === 0; });
-      if(keys.length === 0){ alert('\u8AAD\u307F\u8FBC\u3081\u308B\u30C7\u30FC\u30BF\u304C\u3042\u308A\u307E\u305B\u3093\u3067\u3057\u305F'); return; }
-      openConfirm('\u300C' + file.name + '\u300D\u3092\u8AAD\u307F\u8FBC\u307F\u307E\u3059\u3002\n\u73FE\u5728\u306E\u30C7\u30FC\u30BF\u306F\u4E0A\u66F8\u304D\u3055\u308C\u307E\u3059\u3002\u3088\u308D\u3057\u3044\u3067\u3059\u304B\uFF1F', function(){
-        Object.keys(localStorage).forEach(function(k){
-          if(k.indexOf('pl3_') === 0) localStorage.removeItem(k);
-        });
-        keys.forEach(function(k){ localStorage.setItem(k, data.store[k]); });
-        if(status){
-          status.style.display = 'block';
-          status.textContent = '\u2714 ' + keys.length + '\u4EF6\u306E\u30C7\u30FC\u30BF\u3092\u8AAD\u307F\u8FBC\u307F\u307E\u3057\u305F';
-        }
-        el('importFile').value = '';
-        selectedCats = {};
-        clearSel();
-        applyRecurring(curY, curM);
-        render();
-        renderCatBar();
-      });
-    } catch(err){
-      alert('\u8AAD\u307F\u8FBC\u307F\u30A8\u30E9\u30FC\uFF1A' + err.message);
-    }
-  };
-  reader.readAsText(file, 'utf-8');
-}
 
 
 el('btnPrev').addEventListener('click',function(){ changeMonth(-1); });
 el('btnNext').addEventListener('click',function(){ changeMonth(1); });
+el('btnSettings').addEventListener('click',toggleSettings);
 el('btnExport').addEventListener('click', exportData);
 el('importFile').addEventListener('change', function(){ importFileSelected(this.files[0]); });
-el('btnSettings').addEventListener('click',toggleSettings);
 el('btnAdd').addEventListener('click',function(){ openModal(); });
 el('btnEdit').addEventListener('click',editSelected);
 el('btnDel').addEventListener('click',deleteSelected);
@@ -1695,6 +1668,92 @@ document.addEventListener('keydown',function(e){
   localStorage.setItem(flag, '1');
 })();
 
+/* ════════════════════════════════════════
+   DATA EXPORT / IMPORT
+════════════════════════════════════════ */
+function exportData(){
+  var data = {
+    version:  2,
+    app:      'BillManagement',
+    exported: new Date().toISOString(),
+    store:    {}
+  };
+  Object.keys(localStorage).forEach(function(k){
+    if(k.indexOf('pl3_') === 0) data.store[k] = localStorage.getItem(k);
+  });
+  if(Object.keys(data.store).length === 0){
+    toast('保存するデータがありません'); return;
+  }
+  var json = JSON.stringify(data, null, 2);
+  var now  = new Date();
+  var ymd  = now.getFullYear()
+           + String(now.getMonth()+1).padStart(2,'0')
+           + String(now.getDate()).padStart(2,'0');
+  var filename = 'bill_' + ymd + '.json';
+  var saved = false;
+  try {
+    var blob = new Blob([json], {type:'application/json'});
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href = url; a.download = filename; a.style.display = 'none';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 400);
+    saved = true;
+  } catch(e1){}
+  if(!saved){
+    try {
+      var uri = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
+      var a2  = document.createElement('a');
+      a2.href = uri; a2.download = filename; a2.style.display = 'none';
+      document.body.appendChild(a2); a2.click();
+      setTimeout(function(){ document.body.removeChild(a2); }, 400);
+      saved = true;
+    } catch(e2){}
+  }
+  showImportStatus(
+    saved ? '✔ ' + filename + ' を保存しました' : '⚠ 保存に失敗しました',
+    saved
+  );
+  toast(saved ? 'JSONファイルを保存しました' : '保存できませんでした');
+}
+
+function importFileSelected(file){
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(ev){
+    try {
+      var data = JSON.parse(ev.target.result);
+      if(!data.store || typeof data.store !== 'object'){
+        showImportStatus('⚠ 有効なバックアップファイルではありません', false);
+        toast('有効なJSONファイルではありません'); return;
+      }
+      var count = 0;
+      Object.keys(data.store).forEach(function(k){
+        if(k.indexOf('pl3_') === 0){ localStorage.setItem(k, data.store[k]); count++; }
+      });
+      localStorage.setItem('pl3_samples_cleared_v1', '1');
+      var fi = el('importFile'); if(fi) fi.value = '';
+      showImportStatus('✔ ' + count + ' 件のデータを復元しました', true);
+      toast('データを復元しました');
+      render();
+    } catch(err){
+      showImportStatus('⚠ ファイルの読み込みに失敗しました', false);
+      toast('ファイルの読み込みに失敗しました');
+    }
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+function showImportStatus(msg, ok){
+  var st = el('importStatus');
+  if(!st) return;
+  st.style.display    = 'block';
+  st.style.color      = ok ? 'var(--paid)'    : 'var(--unpaid)';
+  st.style.background = ok ? 'var(--paid-bg)' : 'var(--unpaid-bg)';
+  st.textContent = msg;
+}
+
+
 applyRecurring(curY, curM);
 render();
 })();
@@ -1702,6 +1761,7 @@ render();
 </script>
 
 
+<div id="toast"></div>
 <!-- PWA Install Banner -->
 <div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;
   background:var(--hdr-bg);color:var(--hdr-text);
