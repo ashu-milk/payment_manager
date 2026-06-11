@@ -76,7 +76,7 @@ body{
 
 /* ── Status badges ── */
 .sbadge{
-  display:inline-block;padding:2px 10px;border-radius:2px;
+  display:inline-block;padding:2px 10px;border-radius:8px;
   border:none;cursor:pointer;
   font-family:'游明朝','YuMincho','Hiragino Mincho ProN','Hiragino Mincho Pro','HGS明朝E','MS 明朝',serif;font-size:11px;
   font-weight:600;letter-spacing:.05em;
@@ -94,11 +94,8 @@ body{
 .cs-tag{ font-size:9px;letter-spacing:.04em;color:var(--sepia);white-space:nowrap; }
 .cs-amt{ font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap; }
 
-
-
-
 .book{
-  max-width:1000px;margin:0 auto;background:var(--paper);border-radius:2px;
+  max-width:1000px;margin:0 auto;background:var(--paper);border-radius:8px;
   box-shadow:0 2px 0 #6a9a40,4px 6px 28px rgba(30,60,20,.22);
   overflow:hidden;position:relative;animation:open .45s ease both;
 }
@@ -113,14 +110,15 @@ body{
 .hdr-title{color:var(--hdr-t);}
 .hdr-title .sub{font-size:9px;letter-spacing:.25em;color:var(--hdr-s);text-transform:uppercase;margin-bottom:3px;display:block;}
 .hdr-title h1{font-size:21px;letter-spacing:.12em;}
-.hdr-r{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
-.mn-nav{display:flex;align-items:center;gap:7px;}
+.hdr-r{display:flex;align-items:center;gap:7px;flex-wrap:nowrap;width:100%;}
+.hdr-actions{display:flex;align-items:center;gap:7px;margin-left:auto;}
+
 .mn-btn{background:none;border:1px solid var(--hdr-s);color:var(--hdr-s);width:26px;height:26px;
-  border-radius:2px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+  border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;}
 .mn-btn:hover{background:var(--hdr-s);color:var(--hdr);}
 .mn-disp{font-size:12px;color:var(--hdr-t);letter-spacing:.1em;min-width:98px;text-align:center;}
 .hdr-btn{background:none;border:1px solid var(--hdr-s);color:var(--hdr-s);
-  padding:4px 12px;border-radius:2px;cursor:pointer;font-size:9px;letter-spacing:.15em;
+  padding:4px 12px;border-radius:8px;cursor:pointer;font-size:9px;letter-spacing:.15em;
   text-transform:uppercase;transition:all .15s;}
 .hdr-btn:hover,.hdr-btn.on{background:var(--hdr-s);color:var(--hdr);}
 
@@ -133,12 +131,12 @@ body{
 /* Controls */
 .ctrl{padding:9px 22px 9px 68px;display:flex;gap:7px;align-items:center;flex-wrap:wrap;border-bottom:1px dashed var(--rule);}
 .btn-add{background:var(--accent);color:#fff;border:none;padding:6px 14px;
-  font-size:13px;border-radius:2px;cursor:pointer;transition:background .15s;}
+  font-size:13px;border-radius:8px;cursor:pointer;transition:background .15s;}
 .btn-add:hover{background:var(--accent-h);}
 .abar{display:flex;align-items:center;gap:6px;opacity:0;pointer-events:none;transition:opacity .18s;}
 .abar.on{opacity:1;pointer-events:all;}
 .abar-hint{font-size:9px;letter-spacing:.09em;color:var(--sepia);white-space:nowrap;}
-.abtn{padding:4px 11px;border-radius:2px;cursor:pointer;font-size:12px;transition:all .15s;white-space:nowrap;}
+.abtn{padding:4px 11px;border-radius:8px;cursor:pointer;font-size:12px;transition:all .15s;white-space:nowrap;}
 .abtn.edit{background:none;border:1px solid var(--sepia);color:var(--sepia);}
 .abtn.edit:hover{background:var(--sepia);color:var(--paper);}
 .abtn.del{background:none;border:1px solid var(--del);color:var(--del);}
@@ -146,8 +144,18 @@ body{
 .sp{flex:1;}
 .filter-wrap{display:flex;gap:4px;}
 .fbtn{background:none;border:1px solid var(--rule);color:var(--sepia);
-  padding:4px 10px;font-size:9px;letter-spacing:.1em;border-radius:2px;cursor:pointer;transition:all .15s;}
-.fbtn.on,.fbtn:hover{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  padding:4px 10px;font-size:9px;letter-spacing:.1em;border-radius:8px;cursor:pointer;transition:all .15s;}
+/* "すべて" active */
+.fbtn.on[data-f="all"],.fbtn[data-f="all"]:hover{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+/* 未払い */
+.fbtn[data-f="unpaid"]{border-color:var(--unpaid);color:var(--unpaid);}
+.fbtn.on[data-f="unpaid"],.fbtn[data-f="unpaid"]:hover{background:var(--unpaid-bg);border-color:var(--unpaid);color:var(--unpaid);font-weight:700;}
+/* 支払済 */
+.fbtn[data-f="paid"]{border-color:var(--paid);color:var(--paid);}
+.fbtn.on[data-f="paid"],.fbtn[data-f="paid"]:hover{background:var(--paid-bg);border-color:var(--paid);color:var(--paid);font-weight:700;}
+/* 保留 */
+.fbtn[data-f="pending"]{border-color:var(--pend);color:var(--pend);}
+.fbtn.on[data-f="pending"],.fbtn[data-f="pending"]:hover{background:var(--pend-bg);border-color:var(--pend);color:var(--pend);font-weight:700;}
 
 /* Sort hint bar */
 .sort-bar{display:none;align-items:center;gap:8px;padding:4px 22px 4px 68px;
@@ -156,7 +164,7 @@ body{
 .sort-bar.on{display:flex;}
 .sort-bar strong{color:var(--sepia);}
 .sort-rst{background:none;border:1px solid var(--rule);color:var(--sepia-lt);
-  padding:1px 8px;border-radius:2px;cursor:pointer;font-size:9px;transition:all .15s;}
+  padding:1px 8px;border-radius:8px;cursor:pointer;font-size:9px;transition:all .15s;}
 .sort-rst:hover{background:var(--ink);border-color:var(--ink);color:var(--paper);}
 
 /* Table */
@@ -190,7 +198,7 @@ tbody td.num{text-align:right;font-size:12px;}
   display:flex;align-items:center;justify-content:center;
   z-index:200;opacity:0;pointer-events:none;transition:opacity .18s;}
 .overlay.on{opacity:1;pointer-events:all;}
-.modal{background:var(--paper);border-radius:2px;padding:24px;width:min(480px,93vw);
+.modal{background:var(--paper);border-radius:8px;padding:24px;width:min(480px,93vw);
   box-shadow:0 8px 40px rgba(0,0,0,.3);border-top:4px solid var(--hdr-b);
   transform:translateY(12px);transition:transform .18s;}
 .overlay.on .modal{transform:translateY(0);}
@@ -200,18 +208,18 @@ tbody td.num{text-align:right;font-size:12px;}
 .fg.full{grid-column:1/-1;}
 .fg label{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--sepia);}
 .fg input,.fg select{border:1px solid var(--rule);background:var(--paper-dark);color:var(--ink);
-  padding:7px 9px;font-size:13px;border-radius:2px;outline:none;transition:border-color .15s;}
+  padding:7px 9px;font-size:13px;border-radius:8px;outline:none;transition:border-color .15s;}
 .fg input:focus,.fg select:focus{border-color:var(--sepia);background:#fff;}
 .mact{display:flex;gap:7px;justify-content:flex-end;margin-top:15px;padding-top:12px;border-top:1px dashed var(--rule);}
 .btn-cx{background:none;border:1px solid var(--rule);color:var(--sepia);
-  padding:6px 15px;font-size:13px;border-radius:2px;cursor:pointer;transition:background .15s;}
+  padding:6px 15px;font-size:13px;border-radius:8px;cursor:pointer;transition:background .15s;}
 .btn-cx:hover{background:var(--paper-dark);}
 .btn-sv{background:var(--hdr);color:var(--paper);border:none;
-  padding:6px 19px;font-size:13px;border-radius:2px;cursor:pointer;transition:background .15s;}
+  padding:6px 19px;font-size:13px;border-radius:8px;cursor:pointer;transition:background .15s;}
 .btn-sv:hover{background:var(--sepia);}
 
 /* Confirm dialog */
-.conf-box{background:var(--paper);border-radius:2px;padding:24px 24px 18px;
+.conf-box{background:var(--paper);border-radius:8px;padding:24px 24px 18px;
   width:min(360px,91vw);box-shadow:0 8px 40px rgba(0,0,0,.3);
   border-top:4px solid var(--del);transform:translateY(12px);transition:transform .18s;}
 .overlay.on .conf-box{transform:translateY(0);}
@@ -219,7 +227,7 @@ tbody td.num{text-align:right;font-size:12px;}
 .conf-box p{font-size:13px;color:var(--sepia);margin-bottom:17px;line-height:1.7;}
 .cact{display:flex;gap:7px;justify-content:flex-end;}
 .btn-cok{background:var(--del);color:#fff;border:none;
-  padding:6px 17px;font-size:13px;border-radius:2px;cursor:pointer;transition:background .15s;}
+  padding:6px 17px;font-size:13px;border-radius:8px;cursor:pointer;transition:background .15s;}
 .btn-cok:hover{background:#8a3000;}
 
 /* Settings */
@@ -230,30 +238,30 @@ tbody td.num{text-align:right;font-size:12px;}
 .sec-cnt{background:var(--paper-dark);border:1px solid var(--rule);color:var(--sepia-lt);
   border-radius:10px;padding:0 7px;font-size:9px;}
 .srow{display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:5px 6px;
-  border-radius:2px;transition:background .12s;}
+  border-radius:8px;transition:background .12s;}
 .srow:hover{background:rgba(180,208,144,.15);}
 .srow-name{font-size:13px;font-weight:600;flex:1;min-width:70px;}
 .srow-cat{font-size:10px;color:var(--sepia-lt);min-width:55px;}
 .sbtn{background:none;border:1px solid var(--rule);color:var(--sepia-lt);
-  width:26px;height:26px;border-radius:2px;cursor:pointer;font-size:12px;
+  width:26px;height:26px;border-radius:8px;cursor:pointer;font-size:12px;
   display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
 .sbtn:hover:not(:disabled){background:var(--del-soft);color:var(--del);border-color:var(--del);}
 .sbtn:disabled{opacity:.3;cursor:default;}
 .add-row{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap;}
 .add-inp{border:1px solid var(--rule);background:var(--paper-dark);color:var(--ink);
-  padding:6px 9px;font-size:13px;border-radius:2px;outline:none;flex:1;min-width:120px;transition:border-color .15s;}
+  padding:6px 9px;font-size:13px;border-radius:8px;outline:none;flex:1;min-width:120px;transition:border-color .15s;}
 .add-inp:focus{border-color:var(--sepia);background:#fff;}
 .add-cat-sel{border:1px solid var(--rule);background:var(--paper-dark);color:var(--sepia);
-  padding:6px 7px;font-size:12px;border-radius:2px;outline:none;min-width:110px;}
+  padding:6px 7px;font-size:12px;border-radius:8px;outline:none;min-width:110px;}
 .btn-add-sm{background:var(--ink);color:var(--paper);border:none;
-  padding:6px 13px;font-size:12px;border-radius:2px;cursor:pointer;transition:background .15s;white-space:nowrap;}
+  padding:6px 13px;font-size:12px;border-radius:8px;cursor:pointer;transition:background .15s;white-space:nowrap;}
 .btn-add-sm:hover{background:var(--sepia);}
 
 /* Settings edit modal */
 .srow-inp{border:1px solid var(--sel-b);background:#fff;color:var(--ink);
-  padding:4px 7px;font-size:13px;border-radius:2px;outline:none;flex:1;min-width:70px;}
+  padding:4px 7px;font-size:13px;border-radius:8px;outline:none;flex:1;min-width:70px;}
 .srow-sel{border:1px solid var(--sel-b);background:#fff;color:var(--ink);
-  padding:4px 7px;font-size:12px;border-radius:2px;outline:none;}
+  padding:4px 7px;font-size:12px;border-radius:8px;outline:none;}
 .sbtn.ok{border-color:var(--paid);color:var(--paid);}
 .sbtn.ok:hover{background:var(--paid-bg);color:var(--paid);}
 .sbtn.cx{border-color:var(--sepia-lt);color:var(--sepia-lt);}
@@ -273,13 +281,13 @@ tbody td.num{text-align:right;font-size:12px;}
 .sec-cnt{background:var(--paper-dark);border:1px solid var(--rule);color:var(--sepia-lt);
   border-radius:10px;padding:0 7px;font-size:9px;}
 .srow{display:flex;align-items:center;gap:6px;margin-bottom:4px;padding:5px 6px;
-  border-radius:2px;border:1px solid transparent;transition:background .12s;}
+  border-radius:8px;border:1px solid transparent;transition:background .12s;}
 .srow:hover{background:rgba(180,208,144,.15);border-color:var(--rule);}
 .srow-name{font-size:13px;font-weight:600;flex:1;min-width:70px;}
 .srow-cat{font-size:10px;color:var(--sepia-lt);min-width:70px;}
 .srow-lock{font-size:8px;color:var(--sepia-lt);letter-spacing:.09em;white-space:nowrap;}
 .sbtn{background:none;border:1px solid var(--rule);color:var(--sepia-lt);
-  width:26px;height:26px;border-radius:2px;cursor:pointer;font-size:12px;
+  width:26px;height:26px;border-radius:8px;cursor:pointer;font-size:12px;
   display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
 .sbtn:hover:not(:disabled){background:var(--del-soft);color:var(--del);border-color:var(--del);}
 .sbtn:disabled{opacity:.28;cursor:default;}
@@ -287,12 +295,12 @@ tbody td.num{text-align:right;font-size:12px;}
 .sbtn.ok:hover:not(:disabled){background:var(--paid-bg);color:var(--paid);border-color:var(--paid);}
 .add-row{display:flex;gap:7px;margin-top:8px;flex-wrap:wrap;}
 .add-inp{border:1px solid var(--rule);background:var(--paper-dark);color:var(--ink);
-  padding:6px 9px;font-size:13px;border-radius:2px;outline:none;flex:1;min-width:120px;transition:border-color .15s;}
+  padding:6px 9px;font-size:13px;border-radius:8px;outline:none;flex:1;min-width:120px;transition:border-color .15s;}
 .add-inp:focus{border-color:var(--sepia);background:#fff;}
 .add-cat-sel{border:1px solid var(--rule);background:var(--paper-dark);color:var(--sepia);
-  padding:6px 7px;font-size:12px;border-radius:2px;outline:none;min-width:110px;}
+  padding:6px 7px;font-size:12px;border-radius:8px;outline:none;min-width:110px;}
 .btn-add-sm{background:var(--ink);color:var(--paper);border:none;
-  padding:6px 13px;font-size:12px;border-radius:2px;cursor:pointer;white-space:nowrap;transition:background .15s;}
+  padding:6px 13px;font-size:12px;border-radius:8px;cursor:pointer;white-space:nowrap;transition:background .15s;}
 .btn-add-sm:hover{background:var(--sepia);}
 
 /* Overlays & Modals */
@@ -300,7 +308,7 @@ tbody td.num{text-align:right;font-size:12px;}
   display:flex;align-items:center;justify-content:center;
   z-index:200;opacity:0;pointer-events:none;transition:opacity .18s;}
 .overlay.on{opacity:1;pointer-events:all;}
-.modal{background:var(--paper);border-radius:2px;padding:24px;width:min(480px,93vw);
+.modal{background:var(--paper);border-radius:8px;padding:24px;width:min(480px,93vw);
   box-shadow:0 8px 40px rgba(0,0,0,.3);border-top:4px solid var(--hdr-b);
   transform:translateY(12px);transition:transform .18s;}
 .overlay.on .modal{transform:translateY(0);}
@@ -311,20 +319,20 @@ tbody td.num{text-align:right;font-size:12px;}
 .fg.full{grid-column:1/-1;}
 .fg label{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--sepia);}
 .fg input,.fg select{border:1px solid var(--rule);background:var(--paper-dark);color:var(--ink);
-  padding:7px 9px;font-size:13px;border-radius:2px;outline:none;transition:border-color .15s;
+  padding:7px 9px;font-size:13px;border-radius:8px;outline:none;transition:border-color .15s;
   font-family:'游明朝','YuMincho','Hiragino Mincho ProN','Hiragino Mincho Pro','HGS明朝E','MS 明朝',serif;}
 .fg input:focus,.fg select:focus{border-color:var(--sepia);background:#fff;}
 .mact{display:flex;gap:7px;justify-content:flex-end;margin-top:15px;padding-top:12px;
   border-top:1px dashed var(--rule);}
 .btn-cx{background:none;border:1px solid var(--rule);color:var(--sepia);
-  padding:6px 15px;font-size:13px;border-radius:2px;cursor:pointer;transition:background .15s;
+  padding:6px 15px;font-size:13px;border-radius:8px;cursor:pointer;transition:background .15s;
   font-family:'游明朝','YuMincho','Hiragino Mincho ProN','Hiragino Mincho Pro','HGS明朝E','MS 明朝',serif;}
 .btn-cx:hover{background:var(--paper-dark);}
 .btn-sv{background:var(--ink);color:var(--paper);border:none;
-  padding:6px 19px;font-size:13px;border-radius:2px;cursor:pointer;transition:background .15s;
+  padding:6px 19px;font-size:13px;border-radius:8px;cursor:pointer;transition:background .15s;
   font-family:'游明朝','YuMincho','Hiragino Mincho ProN','Hiragino Mincho Pro','HGS明朝E','MS 明朝',serif;}
 .btn-sv:hover{background:var(--sepia);}
-.conf-box{background:var(--paper);border-radius:2px;padding:24px 24px 18px;
+.conf-box{background:var(--paper);border-radius:8px;padding:24px 24px 18px;
   width:min(360px,91vw);box-shadow:0 8px 40px rgba(0,0,0,.3);border-top:4px solid var(--del);
   transform:translateY(12px);transition:transform .18s;}
 .overlay.on .conf-box{transform:translateY(0);}
@@ -332,7 +340,7 @@ tbody td.num{text-align:right;font-size:12px;}
 .conf-box p{font-size:13px;color:var(--sepia);margin-bottom:17px;line-height:1.7;}
 .cact{display:flex;gap:7px;justify-content:flex-end;}
 .btn-cok{background:var(--del);color:#fff;border:none;
-  padding:6px 17px;font-size:13px;border-radius:2px;cursor:pointer;transition:background .15s;
+  padding:6px 17px;font-size:13px;border-radius:8px;cursor:pointer;transition:background .15s;
   font-family:'游明朝','YuMincho','Hiragino Mincho ProN','Hiragino Mincho Pro','HGS明朝E','MS 明朝',serif;}
 .btn-cok:hover{background:#8a3000;}
 /* Settings edit modal small fields */
@@ -340,7 +348,7 @@ tbody td.num{text-align:right;font-size:12px;}
 .set-edit-field label{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--sepia);}
 .set-edit-field input,.set-edit-field select{
   border:1px solid var(--rule);background:var(--paper-dark);color:var(--ink);
-  padding:7px 9px;font-size:13px;border-radius:2px;outline:none;font-family:'游明朝','YuMincho','Hiragino Mincho ProN','Hiragino Mincho Pro','HGS明朝E','MS 明朝',serif;}
+  padding:7px 9px;font-size:13px;border-radius:8px;outline:none;font-family:'游明朝','YuMincho','Hiragino Mincho ProN','Hiragino Mincho Pro','HGS明朝E','MS 明朝',serif;}
 .set-edit-field input:focus,.set-edit-field select:focus{border-color:var(--sepia);background:#fff;}
 
 .rec-hint{
@@ -399,7 +407,8 @@ tbody td.num{text-align:right;font-size:12px;}
   .hdr{padding:12px 12px 10px 12px;}
   .hdr-title h1{font-size:17px;}
   .hdr-r{gap:7px;}
-  .mn-disp{min-width:80px;font-size:11px;}
+  .mn-bar{padding:7px 12px;}
+  .mn-disp{min-width:80px;font-size:12px;}
   .mn-btn{width:24px;height:24px;}
   .hdr-btn{padding:4px 9px;font-size:8px;}
 
@@ -483,10 +492,14 @@ tbody td.num{text-align:right;font-size:12px;}
 .import-btn{background:var(--sepia);color:#fff;}
 .data-btn-icon{font-size:16px;font-weight:700;}
 .data-btn-label{font-size:13px;}
-.data-btn-desc{font-size:10px;color:var(--sepia);line-height:1.7;margin:0;}
+.data-btn-desc{font-size:10px;color:var(--sepia);line-height:1.7;margin:0;}@media(max-width:680px){
+  #dataView > div:last-child{padding:16px 12px;}.pg-inner{padding:16px 12px;}}
+.mn-nav{display:flex;align-items:center;gap:9px;}
+
 </style>
 </head>
 <body>
+
 <div class="book" id="book">
 
   <!-- HEADER -->
@@ -496,40 +509,43 @@ tbody td.num{text-align:right;font-size:12px;}
       <h1>Bill Management</h1>
     </div>
     <div class="hdr-r">
-      <div class="mn-nav" id="mnNav">
+      <div class="mn-nav" id="mnNav" style="display:none;">
         <button class="mn-btn" id="btnPrev">‹</button>
         <div class="mn-disp" id="mnDisp">—</div>
         <button class="mn-btn" id="btnNext">›</button>
       </div>
-      <button class="hdr-btn" id="btnSettings">⚙ 設定</button>
+      <div class="hdr-actions">
+        <button class="hdr-btn" id="btnData">☁ データ</button>
+        <button class="hdr-btn" id="btnSettings">⚙ 設定</button>
+      </div>
     </div>
   </div>
 
-  <!-- SUMMARY -->
-  <div class="sum" id="sumBar">
-    <div class="sum-item"><div class="lbl">合計支払額</div><div class="val c-total" id="vTotal">¥0</div></div>
-    <div class="sum-item"><div class="lbl">支払済</div><div class="val c-paid" id="vPaid">¥0</div></div>
-    <div class="sum-item"><div class="lbl">未払い</div><div class="val c-unpaid" id="vUnpaid">¥0</div></div>
+  <!-- SUMMARY (ledger only) -->
+  <div class="sum" id="sumBar" style="display:none;">
+    <div class="sum-item"><div class="lbl">合計支払額</div><div class="val c-total" id="vTotal">￥0</div></div>
+    <div class="sum-item"><div class="lbl">支払済</div><div class="val c-paid" id="vPaid">￥0</div></div>
+    <div class="sum-item"><div class="lbl">未払い</div><div class="val c-unpaid" id="vUnpaid">￥0</div></div>
     <div class="sum-item"><div class="lbl">件数</div><div class="val c-total" id="vCount">0件</div></div>
   </div>
 
-  <!-- CATEGORY BREAKDOWN -->
-  <div class="cat-sum" id="catSumBar">
-    <button class="cs-clear" id="csClear">✕ 選択解除</button>
+  <!-- CATEGORY BAR (ledger only) -->
+  <div class="cat-sum" id="catSumBar" style="display:none;">
+    <button class="cs-clear" id="csClear">× 選択解除</button>
     <div class="cs-total" id="csTotal">
       <span class="cs-total-lbl">選択合計</span>
-      <span class="cs-total-val" id="csTotalVal">¥0</span>
+      <span class="cs-total-val" id="csTotalVal">￥0</span>
     </div>
   </div>
 
-  <!-- LEDGER -->
-  <div id="ledger">
+  <!-- LEDGER PAGE -->
+  <div id="ledger" style="display:none;">
     <div class="ctrl">
       <button class="btn-add" id="btnAdd">＋ 追加</button>
       <div class="abar" id="abar">
         <span class="abar-hint" id="abarHint"></span>
         <button class="abtn edit" id="btnEdit">✏ 編集</button>
-        <button class="abtn del"  id="btnDel">✕ 削除</button>
+        <button class="abtn del" id="btnDel">× 削除</button>
       </div>
       <div class="sp"></div>
       <div class="filter-wrap" id="filterWrap">
@@ -560,11 +576,15 @@ tbody td.num{text-align:right;font-size:12px;}
         <div class="icon">📒</div><p>支払い記録がありません</p>
       </div>
     </div>
+    <div class="ftr">
+      <span id="ftrM"></span>
+      <span>BILL MANAGEMENT · <span id="ftrY"></span></span>
+    </div>
   </div>
 
-  <!-- SETTINGS -->
-  <div id="settingsView" style="display:none;padding:22px 22px 22px 68px;">
-    <div class="sec">
+  <!-- SETTINGS PAGE -->
+  <div id="settingsView" class="pg-inner" style="display:none;">
+<div class="sec">
       <div class="sec-hd">カテゴリ管理 <span class="sec-cnt" id="catCnt">0</span></div>
       <div id="catList"></div>
       <div class="add-row">
@@ -615,15 +635,15 @@ tbody td.num{text-align:right;font-size:12px;}
         </span>
         <button class="btn-add-sm" id="btnAddRec">＋ 追加</button>
       </div>
+    
     </div>
+  </div>
 
-    <!-- DATA EXPORT / IMPORT -->
-    <div class="sec" id="secDataMgmt">
+  <!-- DATA PAGE -->
+  <div id="dataView" class="pg-inner" style="display:none;">
+    <div class="sec">
       <div class="sec-hd">データ管理</div>
-
-      <!-- ボタン＋説明 -->
       <div class="data-btns">
-        <!-- エクスポート -->
         <div class="data-btn-wrap">
           <button class="data-btn export-btn" id="btnExport">
             <span class="data-btn-icon">↓</span>
@@ -631,26 +651,25 @@ tbody td.num{text-align:right;font-size:12px;}
           </button>
           <p class="data-btn-desc">すべての支払いデータをJSONファイルとして端末に保存します。機種変更前や定期バックアップにご利用ください。</p>
         </div>
-        <!-- インポート -->
         <div class="data-btn-wrap">
-          <label class="data-btn import-btn">
+          <label class="data-btn import-btn" style="position:relative;">
             <span class="data-btn-icon">↑</span>
             <span class="data-btn-label">JSONを読込</span>
             <input type="file" id="importFile" accept=".json"
               style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
           </label>
-          <p class="data-btn-desc">保存済みのJSONファイルを選択してデータを復元します。現在のデータは上書きされますのでご注意ください。</p>
+          <p class="data-btn-desc">保存済みJSONファイルを選択してデータを復元します。現在のデータは上書きされますのでご注意ください。</p>
         </div>
       </div>
-      <div id="importStatus" style="margin-top:8px;font-size:11px;display:none;padding:6px 10px;border-radius:4px;"></div>
+      <div id="importStatus" style="margin-top:12px;font-size:12px;display:none;padding:8px 12px;border-radius:8px;"></div>
     </div>
-
-  <!-- FOOTER -->
-  <div class="ftr">
-    <span id="ftrM"></span>
-    <span>BILL MANAGEMENT · <span id="ftrY"></span></span>
   </div>
-</div>
+
+</div><!-- /.book -->
+
+
+<div id="toast"></div>
+
 
 <!-- ENTRY MODAL -->
 <div class="overlay" id="entryOverlay">
@@ -760,12 +779,11 @@ tbody td.num{text-align:right;font-size:12px;}
   </div>
 </div>
 
-
-  </div>
-</div>
-
-
 <script>
+
+
+
+
 (function(){
 'use strict';
 
@@ -779,7 +797,6 @@ function toast(msg, dur){
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(function(){ el2.classList.remove('show'); }, dur||2800);
 }
-
 
 /* == CONSTANTS & MASTER DATA == */
 var SK_CATS  = 'pl3_cats';
@@ -908,7 +925,7 @@ function saveEntries(a){ localStorage.setItem(eKey(),JSON.stringify(a)); }
 var curFilter   = 'all';
 var selId       = null;
 var editId      = null;
-var showSett    = false;
+var curPage     = 'ledger';
 var sortCol     = '';
 var sortDir     = 1;
 var confirmCb   = null;
@@ -1066,28 +1083,53 @@ function setFilter(f){
   for(var i=0;i<btns.length;i++) btns[i].classList.toggle('on', btns[i].dataset.f===f);
   clearSel(); render();
 }
-function toggleSettings(){
-  showSett=!showSett;
-  el('ledger').style.display    =showSett?'none':'block';
-  el('sumBar').style.display    =showSett?'none':'flex';
-  el('catSumBar').style.display =showSett?'none':'flex';
-  el('mnNav').style.display     =showSett?'none':'flex';
-  var sv = el('settingsView');
-  sv.style.display = showSett ? 'block' : 'none';
-  sv.style.overflowY  = showSett ? 'auto' : '';
-  sv.style.maxHeight  = showSett ? 'calc(100vh - 60px)' : '';
-  el('book').style.overflowY = showSett ? 'visible' : 'hidden';
-  if(showSett){
-    var pad = window.innerWidth <= 680 ? '16px 12px' : '22px 22px 22px 68px';
-    sv.style.padding = pad;
-  }
-  el('btnSettings').textContent =showSett?'\u2715 \u9589\u3058\u308B':'\u2699 \u8A2D\u5B9A';
-  el('btnSettings').classList.toggle('on',showSett);
-  if(showSett){
+
+/* ── Page switching ──
+   Pages: ledger (default) | settings | data
+   Header (hdr) is always visible.
+   sumBar and catSumBar: shown only on ledger.
+   mnNav: shown on ledger and data pages.
+*/
+function showPage(page){
+  el('ledger').style.display       = 'none';
+  el('sumBar').style.display       = 'none';
+  el('catSumBar').style.display    = 'none';
+  el('settingsView').style.display = 'none';
+  el('dataView').style.display     = 'none';
+  el('mnNav').style.display        = 'none';
+
+  el('btnData').classList.remove('on');
+  el('btnSettings').classList.remove('on');
+  el('btnData').textContent     = '☁ データ';
+  el('btnSettings').textContent = '⚙ 設定';
+
+  if(page === 'ledger'){
+    el('mnNav').style.display     = 'flex';
+    el('ledger').style.display    = 'block';
+    el('sumBar').style.display    = 'flex';
+    el('catSumBar').style.display = 'flex';
+  } else if(page === 'settings'){
+    el('settingsView').style.display = 'block';
+    el('book').style.overflowY = 'auto';
+    el('btnSettings').textContent = '✕ 閉じる';
+    el('btnSettings').classList.add('on');
     renderSettings();
-    var dm = el('secDataMgmt');
-    if(dm) dm.style.display = 'block';
+  } else if(page === 'data'){
+    el('dataView').style.display = 'flex';
+    el('btnData').textContent = '✕ 閉じる';
+    el('btnData').classList.add('on');
   }
+  if(page !== 'settings') el('book').style.overflowY = 'hidden';
+  curPage = page;
+}
+
+
+function toggleData(){
+  showPage(curPage === 'data' ? 'ledger' : 'data');
+}
+
+function toggleSettings(){
+  showPage(curPage === 'settings' ? 'ledger' : 'settings');
 }
 
 /* == MAIN RENDER == */
@@ -1541,7 +1583,6 @@ function saveRecEdit(){
   renderRecList();
 }
 
-
 function addRecurring(){
   var cat    = el('recNewCat').value;
   var name   = el('recNewName').value;
@@ -1597,13 +1638,11 @@ function populateRecSelects(){
   fillNames();
 }
 
-
-
 /* == DATA EXPORT / IMPORT == */
-
 
 el('btnPrev').addEventListener('click',function(){ changeMonth(-1); });
 el('btnNext').addEventListener('click',function(){ changeMonth(1); });
+el('btnData').addEventListener('click', toggleData);
 el('btnSettings').addEventListener('click',toggleSettings);
 el('btnExport').addEventListener('click', exportData);
 el('importFile').addEventListener('change', function(){ importFileSelected(this.files[0]); });
@@ -1760,78 +1799,17 @@ function showImportStatus(msg, ok){
   st.textContent = msg;
 }
 
-
 applyRecurring(curY, curM);
 render();
+showPage('ledger');
 })();
+
+
+
 
 </script>
 
 
-<div id="toast"></div>
-<!-- PWA Install Banner -->
-<div id="installBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;
-  background:var(--hdr-bg);color:var(--hdr-text);
-  padding:13px 16px calc(13px + env(safe-area-inset-bottom,0)) 16px;
-  align-items:center;gap:10px;z-index:1000;
-  box-shadow:0 -2px 16px rgba(0,0,0,.28);">
-  <span style="font-size:12px;flex:1;line-height:1.5;">
-    📲 <strong>Bill Management</strong> をホーム画面に追加できます
-  </span>
-  <button id="btnInstall"
-    style="background:var(--hdr-border);color:var(--hdr-bg);border:none;
-    padding:8px 16px;border-radius:20px;
-    font-family:'游明朝','YuMincho','Hiragino Mincho ProN','Hiragino Mincho Pro','HGS明朝E','MS 明朝',serif;font-size:12px;
-    cursor:pointer;white-space:nowrap;font-weight:600;">
-    インストール
-  </button>
-  <button id="btnBannerClose"
-    style="background:none;border:1px solid rgba(255,255,255,.4);
-    color:rgba(255,255,255,.7);padding:6px 10px;
-    border-radius:20px;font-size:11px;cursor:pointer;">✕</button>
-</div>
 
-<script>
-/* ── Android Chrome PWA Install Prompt ── */
-(function(){
-  var _prompt = null;
-
-  window.addEventListener('beforeinstallprompt', function(e) {
-    e.preventDefault();
-    _prompt = e;
-    var banner = document.getElementById('installBanner');
-    if (banner) banner.style.display = 'flex';
-  });
-
-  window.addEventListener('appinstalled', function() {
-    _prompt = null;
-    var banner = document.getElementById('installBanner');
-    if (banner) banner.style.display = 'none';
-  });
-
-  window.addEventListener('DOMContentLoaded', function() {
-    var btnInstall = document.getElementById('btnInstall');
-    if (btnInstall) {
-      btnInstall.addEventListener('click', function() {
-        if (_prompt) {
-          _prompt.prompt();
-          _prompt.userChoice.then(function(result) {
-            _prompt = null;
-            var banner = document.getElementById('installBanner');
-            if (banner) banner.style.display = 'none';
-          });
-        }
-      });
-    }
-    var btnClose = document.getElementById('btnBannerClose');
-    if (btnClose) {
-      btnClose.addEventListener('click', function() {
-        var banner = document.getElementById('installBanner');
-        if (banner) banner.style.display = 'none';
-      });
-    }
-  });
-})();
-</script>
 </body>
 </html>
