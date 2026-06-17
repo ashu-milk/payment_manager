@@ -391,17 +391,19 @@ tbody td.num{text-align:right;font-size:12px;}
 @media (max-width:680px){
   body{
     padding:0;
+    margin:0;
     background:#c8dba0;
-    min-height:100vh;
-    min-height:100dvh;
   }
   .book{
     max-width:100%;
     margin:0;
     border-radius:0;
     box-shadow:none;
-    min-height:100vh;
-    min-height:100dvh;
+    height:100vh;
+    height:100dvh;
+    max-height:100vh;
+    max-height:100dvh;
+    min-height:unset;
     /* Safe area insets for notched phones */
     padding-bottom:env(safe-area-inset-bottom,0);
   }
