@@ -726,6 +726,20 @@ html{font-size:clamp(13px, 3.6vw, 16px);height:100%;}
 
 <div id="toast"></div>
 
+<!-- UPDATE AVAILABLE BANNER -->
+<div id="updateBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;
+  background:var(--hdr-bg);color:var(--hdr-t);
+  padding:13px 16px calc(13px + env(safe-area-inset-bottom,0)) 16px;
+  align-items:center;gap:10px;z-index:1000;
+  box-shadow:0 -2px 16px rgba(0,0,0,.28);">
+  <span style="font-size:12px;flex:1;line-height:1.5;">新しいバージョンが利用可能です</span>
+  <button id="btnUpdateNow" style="background:var(--hdr-s);color:var(--hdr);border:none;
+    padding:7px 16px;border-radius:8px;cursor:pointer;font-size:12px;
+    font-family:'游明朝','YuMincho','Hiragino Mincho ProN',serif;white-space:nowrap;">
+    今すぐ更新
+  </button>
+</div>
+
 
 <!-- ENTRY MODAL -->
 <div class="overlay" id="entryOverlay">
@@ -1856,6 +1870,59 @@ applyRecurring(curY, curM);
 render();
 showPage('ledger');
 })();
+
+/* ════════════════════════════════════════
+   SERVICE WORKER 登録 + 自動更新検出
+   GitHub Pages 等の HTTPS 環境でのみ動作します
+   （claudeusercontent.com プレビューでは無効）
+════════════════════════════════════════ */
+(function(){
+  if(!('serviceWorker' in navigator)) return;
+
+  window.addEventListener('load', function(){
+    navigator.serviceWorker.register('./sw.js').then(function(reg){
+
+      /* アプリを開いた時点で最新版チェックを強制実行 */
+      reg.update();
+
+      /* 新しいSWが見つかり、インストール完了したら通知 */
+      reg.addEventListener('updatefound', function(){
+        var newWorker = reg.installing;
+        if(!newWorker) return;
+        newWorker.addEventListener('statechange', function(){
+          if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
+            var banner = document.getElementById('updateBanner');
+            if(banner) banner.style.display = 'flex';
+          }
+        });
+      });
+
+    }).catch(function(err){
+      /* プレビュー環境など sw.js が存在しない場合は何もしない */
+    });
+
+    /* 「今すぐ更新」ボタン: 新SWを有効化してリロード */
+    var btnUpdate = document.getElementById('btnUpdateNow');
+    if(btnUpdate){
+      btnUpdate.addEventListener('click', function(){
+        navigator.serviceWorker.getRegistration().then(function(reg){
+          if(reg && reg.waiting){
+            reg.waiting.postMessage('SKIP_WAITING');
+          }
+          window.location.reload();
+        });
+      });
+    }
+
+    /* 新SWが有効化されたら、次回のフェッチから新バージョンが使われる */
+    var refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function(){
+      if(refreshing) return;
+      refreshing = true;
+    });
+  });
+})();
+
 
 
 
