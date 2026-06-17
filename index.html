@@ -98,7 +98,11 @@ body{
   max-width:1000px;margin:0 auto;background:var(--paper);border-radius:8px;
   box-shadow:0 2px 0 #6a9a40,4px 6px 28px rgba(30,60,20,.22);
   overflow:hidden;position:relative;animation:open .45s ease both;
+  display:flex;flex-direction:column;
+  height:100dvh;height:100vh;max-height:100dvh;max-height:100vh;
 }
+.hdr,.mn-bar{flex-shrink:0;}
+#ledger,#settingsView,#dataView{flex:1;overflow-y:auto;min-height:0;}
 @keyframes open{from{opacity:0;transform:perspective(800px) rotateX(4deg) translateY(16px);}to{opacity:1;transform:none;}}
 .book::before{content:'';position:absolute;left:52px;top:0;bottom:0;width:1px;
   background:linear-gradient(to bottom,transparent,var(--rule) 8%,var(--rule) 92%,transparent);
@@ -496,6 +500,42 @@ tbody td.num{text-align:right;font-size:12px;}
   #dataView > div:last-child{padding:16px 12px;}.pg-inner{padding:16px 12px;}}
 .mn-nav{display:flex;align-items:center;gap:9px;}
 
+/* ── Bottom tab bar ── */
+.tab-bar{
+  display:flex;flex-shrink:0;
+  background:var(--hdr-bg);
+  border-top:1px solid var(--hdr-border);
+  padding-bottom:env(safe-area-inset-bottom,0);
+  min-height:56px;
+}
+.tab-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  background:none;border:none;cursor:pointer;
+  padding:8px 4px;color:var(--hdr-s);
+  font-family:'游明朝','YuMincho','Hiragino Mincho ProN','Hiragino Mincho Pro','HGS明朝E','MS 明朝',serif;
+  transition:opacity .15s;
+}
+.tab-btn:hover{opacity:.8;}
+.tab-btn.on{color:var(--hdr-t);}
+.tab-icon{font-size:18px;line-height:1;}
+.tab-label{font-size:10px;letter-spacing:.06em;line-height:1;}
+
+/* ════════════════════════════════════════
+   RESPONSIVE SCALING (Android / mobile)
+════════════════════════════════════════ */
+html{font-size:clamp(13px, 3.6vw, 16px);}
+.hdr-title h1{font-size:clamp(15px, 4.6vw, 19px);}
+.hdr-title .sub{font-size:clamp(8px, 2.2vw, 9px);}
+.sum-item .val{font-size:clamp(13px, 3.6vw, 16px);}
+.sum-item .lbl{font-size:clamp(8px, 2.2vw, 9px);}
+
+/* ── Table stays as normal rows on mobile (horizontal scroll if needed) ── */
+@media(max-width:680px){
+  .tbl-wrap{padding:0 12px 4px 12px;overflow-x:auto;}
+  thead th{font-size:8px;padding:8px 5px;letter-spacing:.08em;}
+  tbody td{padding:7px 5px;font-size:clamp(11px, 3.2vw, 13px);}
+  tbody td.num{font-size:clamp(11px, 3vw, 12px);}
+}
 </style>
 </head>
 <body>
@@ -513,10 +553,6 @@ tbody td.num{text-align:right;font-size:12px;}
         <button class="mn-btn" id="btnPrev">‹</button>
         <div class="mn-disp" id="mnDisp">—</div>
         <button class="mn-btn" id="btnNext">›</button>
-      </div>
-      <div class="hdr-actions">
-        <button class="hdr-btn" id="btnData">☁ データ</button>
-        <button class="hdr-btn" id="btnSettings">⚙ 設定</button>
       </div>
     </div>
   </div>
@@ -663,6 +699,18 @@ tbody td.num{text-align:right;font-size:12px;}
       </div>
       <div id="importStatus" style="margin-top:12px;font-size:12px;display:none;padding:8px 12px;border-radius:8px;"></div>
     </div>
+  </div>
+  <!-- BOTTOM TAB BAR -->
+  <div class="tab-bar">
+    <button class="tab-btn on" id="tabLedger">
+      <span class="tab-icon">📒</span><span class="tab-label">帳簿</span>
+    </button>
+    <button class="tab-btn" id="tabData">
+      <span class="tab-icon">☁</span><span class="tab-label">データ</span>
+    </button>
+    <button class="tab-btn" id="tabSettings">
+      <span class="tab-icon">⚙</span><span class="tab-label">設定</span>
+    </button>
   </div>
 
 </div><!-- /.book -->
@@ -905,6 +953,14 @@ var SORT_LBL = {category:'\u30AB\u30C6\u30B4\u30EA',name:'\u652F\u6255\u3044\u54
 function el(id){ return document.getElementById(id); }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function uid(){ return Math.random().toString(36).slice(2,9); }
+/* "YYYY-MM-DD" → "26日" (day-only display for compact rows) */
+function fmtDay(dateStr){
+  if(!dateStr) return '\u2014';
+  var parts = dateStr.split('-');
+  var d = parseInt(parts[2], 10);
+  if(isNaN(d)) return dateStr;
+  return d + '\u65e5';
+}
 function setTxt(id,v){ var e=el(id); if(e) e.textContent=v; }
 
 /* \u2500\u2500 Master data helpers \u2500\u2500 */
@@ -1098,39 +1154,27 @@ function showPage(page){
   el('dataView').style.display     = 'none';
   el('mnNav').style.display        = 'none';
 
-  el('btnData').classList.remove('on');
-  el('btnSettings').classList.remove('on');
-  el('btnData').textContent     = '☁ データ';
-  el('btnSettings').textContent = '⚙ 設定';
+  el('tabLedger').classList.remove('on');
+  el('tabData').classList.remove('on');
+  el('tabSettings').classList.remove('on');
 
   if(page === 'ledger'){
     el('mnNav').style.display     = 'flex';
     el('ledger').style.display    = 'block';
     el('sumBar').style.display    = 'flex';
     el('catSumBar').style.display = 'flex';
+    el('tabLedger').classList.add('on');
   } else if(page === 'settings'){
     el('settingsView').style.display = 'block';
-    el('book').style.overflowY = 'auto';
-    el('btnSettings').textContent = '✕ 閉じる';
-    el('btnSettings').classList.add('on');
+    el('tabSettings').classList.add('on');
     renderSettings();
   } else if(page === 'data'){
-    el('dataView').style.display = 'flex';
-    el('btnData').textContent = '✕ 閉じる';
-    el('btnData').classList.add('on');
+    el('dataView').style.display = 'block';
+    el('tabData').classList.add('on');
   }
-  if(page !== 'settings') el('book').style.overflowY = 'hidden';
   curPage = page;
 }
 
-
-function toggleData(){
-  showPage(curPage === 'data' ? 'ledger' : 'data');
-}
-
-function toggleSettings(){
-  showPage(curPage === 'settings' ? 'ledger' : 'settings');
-}
 
 /* == MAIN RENDER == */
 function render(){
@@ -1173,7 +1217,7 @@ function render(){
       '<td><div class="cat-wrap"><span class="cat-tag" title="'+esc(e.category)+'">'+esc(e.category)+'</span></div></td>'+
       '<td style="font-weight:600;letter-spacing:.02em;">'+esc(e.name)+'</td>'+
       '<td class="num">\u00A5'+e.amount.toLocaleString()+'</td>'+
-      '<td class="dd'+(isOver?' ov':'')+'">'+( e.date||'\u2014')+(isOver?' \u26A0':'')+'</td>'+
+      '<td class="dd'+(isOver?' ov':'')+'" data-cat="'+esc(e.category)+'" title="'+esc(e.date||'')+'">'+fmtDay(e.date)+(isOver?' \u26A0':'')+'</td>'+
       '<td><button class="sbadge '+e.status+'" data-eid="'+e.id+'">'+(STAT_LBL[e.status]||e.status)+'</button></td>'+
       '<td class="nc">'+(esc(e.note)||'\u2014')+'</td>';
 
@@ -1642,8 +1686,9 @@ function populateRecSelects(){
 
 el('btnPrev').addEventListener('click',function(){ changeMonth(-1); });
 el('btnNext').addEventListener('click',function(){ changeMonth(1); });
-el('btnData').addEventListener('click', toggleData);
-el('btnSettings').addEventListener('click',toggleSettings);
+el('tabLedger').addEventListener('click', function(){ showPage('ledger'); });
+el('tabData').addEventListener('click', function(){ showPage('data'); });
+el('tabSettings').addEventListener('click', function(){ showPage('settings'); });
 el('btnExport').addEventListener('click', exportData);
 el('importFile').addEventListener('change', function(){ importFileSelected(this.files[0]); });
 el('btnAdd').addEventListener('click',function(){ openModal(); });
