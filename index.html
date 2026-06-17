@@ -29,6 +29,7 @@ body{
   background:#c8dba0;
   background-image:repeating-linear-gradient(0deg,transparent,transparent 27px,rgba(80,120,40,.09) 27px,rgba(80,120,40,.09) 28px);
   font-family:'游明朝','YuMincho','Hiragino Mincho ProN','Hiragino Mincho Pro','HGS明朝E','MS 明朝',serif;min-height:100vh;min-height:100dvh;
+  height:100%;
   padding:28px 14px;color:var(--ink);
 }
 
@@ -274,6 +275,7 @@ tbody td.num{text-align:right;font-size:12px;}
 @media(max-width:800px){.cat-wrap{max-width:64px;}}
 @media(max-width:560px){.cat-wrap{max-width:38px;}}
 
+@media(max-width:680px){
   .hdr,.sum,.cat-sum,.ctrl,.sort-bar,.tbl-wrap,.ftr{padding-left:12px;}
   .fgrid{grid-template-columns:1fr;}
   .abar-hint{display:none;}
@@ -381,6 +383,7 @@ tbody td.num{text-align:right;font-size:12px;}
 .rec-stat.unpaid{background:var(--unpaid-bg);color:var(--unpaid);}
 .rec-stat.pending{background:var(--pend-bg);color:var(--pend);}
 
+@media(max-width:680px){
   .book::before{left:0;}
   .hdr,.sum,.cat-sum,.ctrl,.sort-bar,.tbl-wrap,.ftr{padding-left:12px;}
   .fgrid{grid-template-columns:1fr;}
@@ -389,6 +392,10 @@ tbody td.num{text-align:right;font-size:12px;}
 
 /* ════ MOBILE FULL-SCREEN ════ */
 @media (max-width:680px){
+  html,body{
+    height:100%;
+    width:100%;
+  }
   body{
     padding:0;
     margin:0;
@@ -396,6 +403,7 @@ tbody td.num{text-align:right;font-size:12px;}
   }
   .book{
     max-width:100%;
+    width:100%;
     margin:0;
     border-radius:0;
     box-shadow:none;
@@ -404,8 +412,6 @@ tbody td.num{text-align:right;font-size:12px;}
     max-height:100vh;
     max-height:100dvh;
     min-height:unset;
-    /* Safe area insets for notched phones */
-    padding-bottom:env(safe-area-inset-bottom,0);
   }
   .book::before{left:0;} /* remove spine line */
 
@@ -525,7 +531,7 @@ tbody td.num{text-align:right;font-size:12px;}
 /* ════════════════════════════════════════
    RESPONSIVE SCALING (Android / mobile)
 ════════════════════════════════════════ */
-html{font-size:clamp(13px, 3.6vw, 16px);}
+html{font-size:clamp(13px, 3.6vw, 16px);height:100%;}
 .hdr-title h1{font-size:clamp(15px, 4.6vw, 19px);}
 .hdr-title .sub{font-size:clamp(8px, 2.2vw, 9px);}
 .sum-item .val{font-size:clamp(13px, 3.6vw, 16px);}
