@@ -726,20 +726,6 @@ html{font-size:clamp(13px, 3.6vw, 16px);height:100%;}
 
 <div id="toast"></div>
 
-<!-- UPDATE AVAILABLE BANNER -->
-<div id="updateBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;
-  background:var(--hdr-bg);color:var(--hdr-t);
-  padding:13px 16px calc(13px + env(safe-area-inset-bottom,0)) 16px;
-  align-items:center;gap:10px;z-index:1000;
-  box-shadow:0 -2px 16px rgba(0,0,0,.28);">
-  <span style="font-size:12px;flex:1;line-height:1.5;">新しいバージョンが利用可能です</span>
-  <button id="btnUpdateNow" style="background:var(--hdr-s);color:var(--hdr);border:none;
-    padding:7px 16px;border-radius:8px;cursor:pointer;font-size:12px;
-    font-family:'游明朝','YuMincho','Hiragino Mincho ProN',serif;white-space:nowrap;">
-    今すぐ更新
-  </button>
-</div>
-
 
 <!-- ENTRY MODAL -->
 <div class="overlay" id="entryOverlay">
@@ -905,10 +891,10 @@ function yyyymmToEra(ym){
   for(var i=0;i<ERAS.length-1;i++){
     var e=ERAS[i];
     if(gY > e.start || (gY===e.start && mon>=e.startM)){
-      return { era:e.name, eraY: gY - e.start + 1, mon:mon };
+      return { era:e.name, eraY: gY - e.start + 1, mon:mon, gY:gY };
     }
   }
-  return { era:'\u897F\u66A6', eraY:gY, mon:mon };
+  return { era:'\u897F\u66A6', eraY:gY, mon:mon, gY:gY };
 }
 
 /* Build era and month selectors */
@@ -947,8 +933,7 @@ function fmtYM(ym){
   if(!r) return ym;
   if(r.era==='\u897F\u66A6') return r.eraY+'\u5E74'+r.mon+'\u6708';
   return r.era+(r.eraY===1?'\u5143':r.eraY)+'\u5E74('+
-    ERAS.find(function(e){return e.name===r.era;}).short+
-    r.eraY+')'+r.mon+'\u6708';
+    r.gY+')'+r.mon+'\u6708';
 }
 
 /* Clear pickers */
@@ -1872,12 +1857,35 @@ showPage('ledger');
 })();
 
 /* ════════════════════════════════════════
-   SERVICE WORKER 登録 + 自動更新検出
+   SERVICE WORKER 登録 + 完全自動更新
    GitHub Pages 等の HTTPS 環境でのみ動作します
    （claudeusercontent.com プレビューでは無効）
+
+   方式: 新バージョンを検出したら裏側で自動的に
+   有効化し、入力中のモーダルが無い安全なタイミングで
+   リロード。リロード直後に「最新になりました」と
+   一瞬だけ表示する。タップ操作は不要。
 ════════════════════════════════════════ */
 (function(){
   if(!('serviceWorker' in navigator)) return;
+
+  var OVERLAY_IDS = ['entryOverlay','confOverlay','setEditOverlay','setDelOverlay','recEditOverlay'];
+  function isModalOpen(){
+    return OVERLAY_IDS.some(function(id){
+      var el2 = document.getElementById(id);
+      return el2 && el2.classList.contains('on');
+    });
+  }
+
+  /* リロード後、最新化されたことを一瞬通知する */
+  if(sessionStorage.getItem('pl3_just_updated') === '1'){
+    sessionStorage.removeItem('pl3_just_updated');
+    window.addEventListener('load', function(){
+      setTimeout(function(){
+        if(typeof toast === 'function') toast('\u6700\u65b0\u306b\u306a\u308a\u307e\u3057\u305f', 2200);
+      }, 300);
+    });
+  }
 
   window.addEventListener('load', function(){
     navigator.serviceWorker.register('./sw.js').then(function(reg){
@@ -1885,14 +1893,12 @@ showPage('ledger');
       /* アプリを開いた時点で最新版チェックを強制実行 */
       reg.update();
 
-      /* 新しいSWが見つかり、インストール完了したら通知 */
       reg.addEventListener('updatefound', function(){
         var newWorker = reg.installing;
         if(!newWorker) return;
         newWorker.addEventListener('statechange', function(){
           if(newWorker.state === 'installed' && navigator.serviceWorker.controller){
-            var banner = document.getElementById('updateBanner');
-            if(banner) banner.style.display = 'flex';
+            applyUpdateWhenSafe(reg);
           }
         });
       });
@@ -1901,17 +1907,17 @@ showPage('ledger');
       /* プレビュー環境など sw.js が存在しない場合は何もしない */
     });
 
-    /* 「今すぐ更新」ボタン: 新SWを有効化してリロード */
-    var btnUpdate = document.getElementById('btnUpdateNow');
-    if(btnUpdate){
-      btnUpdate.addEventListener('click', function(){
-        navigator.serviceWorker.getRegistration().then(function(reg){
-          if(reg && reg.waiting){
-            reg.waiting.postMessage('SKIP_WAITING');
-          }
-          window.location.reload();
-        });
-      });
+    /* 入力中でなければ即時適用、入力中なら一定間隔でリトライ */
+    function applyUpdateWhenSafe(reg){
+      if(isModalOpen()){
+        setTimeout(function(){ applyUpdateWhenSafe(reg); }, 4000);
+        return;
+      }
+      sessionStorage.setItem('pl3_just_updated', '1');
+      if(reg.waiting){
+        reg.waiting.postMessage('SKIP_WAITING');
+      }
+      window.location.reload();
     }
 
     /* 新SWが有効化されたら、次回のフェッチから新バージョンが使われる */
