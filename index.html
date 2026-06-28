@@ -702,7 +702,7 @@ html{font-size:clamp(13px, 3.6vw, 16px);height:100%;}
             <input type="file" id="importFile" accept=".json"
               style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;">
           </label>
-          <p class="data-btn-desc">バックアップ済みのJSONファイルを選択してデータを復元します。現在のデータはすべて上書きされますのでご注意ください。</p>
+          <p class="data-btn-desc">バックアップ済みのJSONファイルを選択してデータを復元します。「追加」または「上書き」を選択できます。</p>
         </div>
       </div>
       <div id="importStatus" style="margin-top:12px;font-size:12px;display:none;padding:8px 12px;border-radius:8px;"></div>
@@ -763,6 +763,19 @@ html{font-size:clamp(13px, 3.6vw, 16px);height:100%;}
     <div class="cact">
       <button class="btn-cx" id="btnConfNo">キャンセル</button>
       <button class="btn-cok" id="btnConfYes">削除する</button>
+    </div>
+  </div>
+</div>
+
+<!-- IMPORT MODE MODAL -->
+<div class="overlay" id="importModeOverlay">
+  <div class="conf-box">
+    <h3>データの読み込み方法</h3>
+    <p id="importModeMsg">読み込んだデータをどのように反映しますか？</p>
+    <div class="cact" style="flex-direction:column;gap:8px;">
+      <button class="btn-cok" id="btnImportMerge" style="width:100%;">追加（不足分のみ追加）</button>
+      <button class="btn-cok" id="btnImportOverwrite" style="width:100%;background:var(--unpaid);">上書き（現在のデータを置き換え）</button>
+      <button class="btn-cx" id="btnImportModeCancel" style="width:100%;">キャンセル</button>
     </div>
   </div>
 </div>
@@ -1722,6 +1735,10 @@ el('fNameSel').addEventListener('change',onNameChange);
 el('btnCancelEntry').addEventListener('click',closeModal);
 el('btnSaveEntry').addEventListener('click',saveEntry);
 el('entryOverlay').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
+el('btnImportMerge').addEventListener('click', runImportMerge);
+el('btnImportOverwrite').addEventListener('click', runImportOverwrite);
+el('btnImportModeCancel').addEventListener('click', closeImportMode);
+el('importModeOverlay').addEventListener('click', function(e){ if(e.target===this) closeImportMode(); });
 
 el('btnConfNo').addEventListener('click',closeConfirm);
 el('btnConfYes').addEventListener('click',function(){ if(confirmCb) confirmCb(); closeConfirm(); });
@@ -1815,6 +1832,8 @@ function exportData(){
   toast(saved ? 'JSONファイルを保存しました' : '保存できませんでした');
 }
 
+var _pendingImportData = null;
+
 function importFileSelected(file){
   if(!file) return;
   var reader = new FileReader();
@@ -1823,23 +1842,123 @@ function importFileSelected(file){
       var data = JSON.parse(ev.target.result);
       if(!data.store || typeof data.store !== 'object'){
         showImportStatus('⚠ 有効なバックアップファイルではありません', false);
-        toast('有効なJSONファイルではありません'); return;
+        toast('有効なJSONファイルではありません');
+        var fi0 = el('importFile'); if(fi0) fi0.value = '';
+        return;
       }
-      var count = 0;
-      Object.keys(data.store).forEach(function(k){
-        if(k.indexOf('pl3_') === 0){ localStorage.setItem(k, data.store[k]); count++; }
-      });
-      localStorage.setItem('pl3_samples_cleared_v1', '1');
-      var fi = el('importFile'); if(fi) fi.value = '';
-      showImportStatus('✔ ' + count + ' 件のデータを復元しました', true);
-      toast('データを復元しました');
-      render();
+      _pendingImportData = data;
+      el('importModeOverlay').classList.add('on');
     } catch(err){
       showImportStatus('⚠ ファイルの読み込みに失敗しました', false);
       toast('ファイルの読み込みに失敗しました');
+      var fi1 = el('importFile'); if(fi1) fi1.value = '';
     }
   };
   reader.readAsText(file, 'utf-8');
+}
+
+function closeImportMode(){
+  el('importModeOverlay').classList.remove('on');
+  _pendingImportData = null;
+  var fi = el('importFile'); if(fi) fi.value = '';
+}
+
+/* 上書き: 既存データをすべて置き換える（従来の動作） */
+function runImportOverwrite(){
+  var data = _pendingImportData; if(!data) return;
+  var count = 0;
+  Object.keys(data.store).forEach(function(k){
+    if(k.indexOf('pl3_') === 0){ localStorage.setItem(k, data.store[k]); count++; }
+  });
+  localStorage.setItem('pl3_samples_cleared_v1', '1');
+  el('importModeOverlay').classList.remove('on');
+  _pendingImportData = null;
+  var fi = el('importFile'); if(fi) fi.value = '';
+  showImportStatus('✔ ' + count + ' 件のデータを上書きしました', true);
+  toast('データを上書きしました');
+  render();
+}
+
+/* 追加: 不足分のみ追加し、既存データは変更しない */
+function runImportMerge(){
+  var data = _pendingImportData; if(!data) return;
+  var addedEntries = 0, addedCats = 0, addedNames = 0, addedRecs = 0;
+
+  Object.keys(data.store).forEach(function(k){
+    if(k.indexOf('pl3_') !== 0) return;
+    var incomingRaw = data.store[k];
+
+    /* カテゴリ一覧: 名前が無ければ追加 */
+    if(k === SK_CATS){
+      try{
+        var incomingCats = JSON.parse(incomingRaw) || [];
+        var curCats = getCats();
+        incomingCats.forEach(function(c){
+          if(curCats.indexOf(c) === -1){ curCats.push(c); addedCats++; }
+        });
+        saveCats(curCats);
+      }catch(e){}
+      return;
+    }
+
+    /* 支払い名一覧: 名前が無ければ追加 */
+    if(k === SK_NAMES){
+      try{
+        var incomingNames = JSON.parse(incomingRaw) || [];
+        var curNames = getNames();
+        incomingNames.forEach(function(n){
+          var exists = curNames.some(function(cn){ return cn.name === n.name; });
+          if(!exists){ curNames.push(n); addedNames++; }
+        });
+        saveNames(curNames);
+      }catch(e){}
+      return;
+    }
+
+    /* 定期支払い: idが無ければ追加 */
+    if(k === SK_REC){
+      try{
+        var incomingRecs = JSON.parse(incomingRaw) || [];
+        var curRecs = getRecs();
+        var curIds = curRecs.map(function(r){ return r.id; });
+        incomingRecs.forEach(function(r){
+          if(curIds.indexOf(r.id) === -1){ curRecs.push(r); addedRecs++; }
+        });
+        saveRecs(curRecs);
+      }catch(e){}
+      return;
+    }
+
+    /* 月別の支払い記録 (pl3_YYYY_M): idが無ければ追加 */
+    if(/^pl3_\d{4}_\d+$/.test(k)){
+      try{
+        var incomingEntries = JSON.parse(incomingRaw) || [];
+        var curEntriesRaw = localStorage.getItem(k);
+        var curEntries = curEntriesRaw ? JSON.parse(curEntriesRaw) : [];
+        var curEntryIds = curEntries.map(function(e){ return e.id; });
+        incomingEntries.forEach(function(e){
+          if(curEntryIds.indexOf(e.id) === -1){ curEntries.push(e); addedEntries++; }
+        });
+        localStorage.setItem(k, JSON.stringify(curEntries));
+      }catch(e){}
+      return;
+    }
+    /* その他の pl3_ キー（done フラグ等）は触れない: 既存を優先 */
+  });
+
+  el('importModeOverlay').classList.remove('on');
+  _pendingImportData = null;
+  var fi = el('importFile'); if(fi) fi.value = '';
+
+  var totalAdded = addedEntries + addedCats + addedNames + addedRecs;
+  if(totalAdded === 0){
+    showImportStatus('追加できる新しいデータはありませんでした', true);
+    toast('新しいデータはありませんでした');
+  } else {
+    showImportStatus('✔ 記録'+addedEntries+'件・カテゴリ'+addedCats+'件・支払い名'+addedNames+'件・定期'+addedRecs+'件を追加しました', true);
+    toast('不足分を追加しました');
+  }
+  render();
 }
 
 function showImportStatus(msg, ok){
@@ -1869,7 +1988,7 @@ showPage('ledger');
 (function(){
   if(!('serviceWorker' in navigator)) return;
 
-  var OVERLAY_IDS = ['entryOverlay','confOverlay','setEditOverlay','setDelOverlay','recEditOverlay'];
+  var OVERLAY_IDS = ['entryOverlay','confOverlay','setEditOverlay','setDelOverlay','recEditOverlay','importModeOverlay'];
   function isModalOpen(){
     return OVERLAY_IDS.some(function(id){
       var el2 = document.getElementById(id);

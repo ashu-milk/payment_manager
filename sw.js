@@ -6,7 +6,7 @@
 /* このバージョン番号を更新するたびに変更してください。
    変更すると古いキャッシュが破棄され、新しいファイルが
    ダウンロードされます。 */
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = 'bill-management-' + CACHE_VERSION;
 
 const ASSETS_TO_CACHE = [
