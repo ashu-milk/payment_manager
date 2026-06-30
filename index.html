@@ -1681,24 +1681,30 @@ function populateRecSelects(){
   var cats  = getCats();
   var names = getNames();
 
+  /* カテゴリ選択肢を更新 */
   catSel.innerHTML = cats.map(function(c){
     return '<option value="'+esc(c)+'">'+esc(c)+'</option>';
   }).join('');
 
+  /* 重複リスナー防止: cloneNode でリスナーをリセット */
+  var newCatSel = catSel.cloneNode(true);
+  catSel.parentNode.replaceChild(newCatSel, catSel);
+
   function fillNames(){
-    var cat = catSel.value;
-    nameSel.innerHTML = names
-      .filter(function(n){ return n.cat===cat && n.name!==OTHER; })
-      .map(function(n){ return '<option value="'+esc(n.name)+'">'+esc(n.name)+'</option>'; })
-      .join('');
-    if(!nameSel.innerHTML){
-      nameSel.innerHTML = names
-        .filter(function(n){ return n.name!==OTHER; })
-        .map(function(n){ return '<option value="'+esc(n.name)+'">'+esc(n.name)+'</option>'; })
-        .join('');
-    }
+    /* cloneNode後の要素を毎回 el() で取得 */
+    var currentCatSel  = el('recNewCat');
+    var currentNameSel = el('recNewName');
+    if(!currentCatSel||!currentNameSel) return;
+    var cat = currentCatSel.value;
+    var filtered = names.filter(function(n){ return n.cat===cat && n.name!==OTHER; });
+    /* カテゴリ一致なしの場合は全件表示 */
+    var list = filtered.length ? filtered : names.filter(function(n){ return n.name!==OTHER; });
+    currentNameSel.innerHTML = list.map(function(n){
+      return '<option value="'+esc(n.name)+'">'+esc(n.name)+'</option>';
+    }).join('');
   }
-  catSel.addEventListener('change', fillNames);
+
+  newCatSel.addEventListener('change', fillNames);
   fillNames();
 }
 
